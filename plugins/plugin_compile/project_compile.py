@@ -1518,10 +1518,16 @@ class CCPluginCompile(cocos.CCPlugin):
         build_mode = 'Debug' if self._is_debug_mode() else 'Release'
         with cocos.pushd(build_dir):
             debug_state = 'ON' if self._is_debug_mode() else 'OFF'
-            self._run_cmd('emcmake cmake -DCMAKE_BUILD_TYPE=%s -DDEBUG_MODE=%s %s' % (build_mode, debug_state, os.path.relpath(cmakefile_dir, build_dir)))
+            if cocos.os_is_win32():
+                self._run_cmd('emcmake cmake -G Ninja -DCMAKE_BUILD_TYPE=%s -DDEBUG_MODE=%s %s' % (build_mode, debug_state, os.path.relpath(cmakefile_dir, build_dir)))
+            else:
+                self._run_cmd('emcmake cmake -DCMAKE_BUILD_TYPE=%s -DDEBUG_MODE=%s %s' % (build_mode, debug_state, os.path.relpath(cmakefile_dir, build_dir)))
 
         with cocos.pushd(build_dir):
-            self._run_cmd('emmake make -j%s' % self._jobs)
+            if cocos.os_is_win32():
+                self._run_cmd('ninja -j %s' % self._jobs)
+            else:
+                self._run_cmd('emmake make -j%s' % self._jobs)
 
         # move file
         output_dir = self._output_dir

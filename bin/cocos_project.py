@@ -240,9 +240,9 @@ class Platforms(object):
         ret = []
         platforms_for_os = {
             "linux" : [ Platforms.WEB, Platforms.LINUX, Platforms.ANDROID, Platforms.TIZEN, Platforms.EMSCRIPTEN ],
-            "mac" : [ Platforms.WEB, Platforms.IOS, Platforms.MAC, Platforms.ANDROID, Platforms.TIZEN ],
+            "mac" : [ Platforms.WEB, Platforms.IOS, Platforms.MAC, Platforms.ANDROID, Platforms.TIZEN, Platforms.EMSCRIPTEN ],
             "win32" : [ Platforms.WEB, Platforms.WIN32, Platforms.ANDROID,
-                        Platforms.METRO, Platforms.TIZEN ]
+                        Platforms.METRO, Platforms.TIZEN, Platforms.EMSCRIPTEN ]
         }
         for p in platforms:
             if cocos.os_is_linux():
