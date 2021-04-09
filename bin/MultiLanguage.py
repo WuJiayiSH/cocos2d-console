@@ -99,6 +99,14 @@ class MultiLanguage(object):
 
             if self.cfg_info.has_key(cur_lang_key):
                 self.cur_lang_strings = self.cfg_info[cur_lang_key]
+                # Check potential UnicodeEncodeError when system language differs to encoding. 
+                # e.g: my Windows language is Chinese but cmd encoding is cp932(Japanese)
+                try:
+                    test = self.cur_lang_strings['COCOS_AGREEMENT']
+                    if isinstance(test, unicode):
+                        test = test.encode(self.encoding)
+                except:
+                    self.cur_lang_strings = None
             else:
                 self.cur_lang_strings = None
 
