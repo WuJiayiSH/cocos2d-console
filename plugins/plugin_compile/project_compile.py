@@ -1514,20 +1514,23 @@ class CCPluginCompile(cocos.CCPlugin):
 
         if not os.path.exists(build_dir):
             os.makedirs(build_dir)
-
+        
+        emsdk_root = cocos.check_environment_variable('EMSDK_ROOT')
+        emsdk_env_path = os.path.join(emsdk_root, 'emsdk_env.bat' if cocos.os_is_win32() else 'emsdk_env.sh') 
         build_mode = 'Debug' if self._is_debug_mode() else 'Release'
         with cocos.pushd(build_dir):
             debug_state = 'ON' if self._is_debug_mode() else 'OFF'
+            
             if cocos.os_is_win32():
-                self._run_cmd('emcmake cmake -G Ninja -DCMAKE_BUILD_TYPE=%s -DDEBUG_MODE=%s %s' % (build_mode, debug_state, os.path.relpath(cmakefile_dir, build_dir)))
+                self._run_cmd('%s && emcmake cmake -G Ninja -DCMAKE_BUILD_TYPE=%s -DDEBUG_MODE=%s %s' % (emsdk_env_path, build_mode, debug_state, os.path.relpath(cmakefile_dir, build_dir)))
             else:
-                self._run_cmd('emcmake cmake -DCMAKE_BUILD_TYPE=%s -DDEBUG_MODE=%s %s' % (build_mode, debug_state, os.path.relpath(cmakefile_dir, build_dir)))
+                self._run_cmd('bash -c "source %s && emcmake cmake -DCMAKE_BUILD_TYPE=%s -DDEBUG_MODE=%s %s"' % (emsdk_env_path, build_mode, debug_state, os.path.relpath(cmakefile_dir, build_dir)))
 
         with cocos.pushd(build_dir):
             if cocos.os_is_win32():
-                self._run_cmd('ninja -j %s' % self._jobs)
+                self._run_cmd('%s && ninja -j %s' % (emsdk_env_path, self._jobs))
             else:
-                self._run_cmd('emmake make -j%s' % self._jobs)
+                self._run_cmd('bash -c "source %s && emmake make -j%s"' % (emsdk_env_path, self._jobs))
 
         # move file
         output_dir = self._output_dir
@@ -1547,6 +1550,18 @@ class CCPluginCompile(cocos.CCPlugin):
             else:
                 result_dir = os.path.join(build_dir, 'bin', self.project_name)
         
+        # package resource
+        file_packager_path = os.path.join(emsdk_root, 'upstream', 'emscripten', 'tools', 'file_packager')
+        if self._project._is_script_project():
+            data_files = os.path.join(project_dir, "src@", "src") + ' ' + os.path.join(project_dir, "res@", "res")
+        else:
+            data_files = os.path.join(project_dir, "Resources@")
+        
+        if cocos.os_is_win32():
+            self._run_cmd('%s && %s %s --use-preload-cache --preload %s --js-output=%s' % (emsdk_env_path, file_packager_path, os.path.join(result_dir, 'resource.data'), data_files, os.path.join(result_dir, 'resource.js')))
+        else:
+            self._run_cmd('bash -c "source %s && %s %s --use-preload-cache --preload %s --js-output=%s"' % (emsdk_env_path, file_packager_path, os.path.join(result_dir, 'resource.data'), data_files, os.path.join(result_dir, 'resource.js')))
+
         cocos.copy_files_in_dir(result_dir, output_dir)
 
         self.run_root = output_dir
