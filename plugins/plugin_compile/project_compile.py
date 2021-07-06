@@ -1550,17 +1550,17 @@ class CCPluginCompile(cocos.CCPlugin):
             else:
                 result_dir = os.path.join(build_dir, 'bin', self.project_name)
         
-        # package resource
-        file_packager_path = os.path.join(emsdk_root, 'upstream', 'emscripten', 'tools', 'file_packager')
-        if self._project._is_script_project():
-            data_files = os.path.join(project_dir, "src@", "src") + ' ' + os.path.join(project_dir, "res@", "res")
-        else:
-            data_files = os.path.join(project_dir, "Resources@")
+        # # package resource
+        # file_packager_path = os.path.join(emsdk_root, 'upstream', 'emscripten', 'tools', 'file_packager')
+        # if self._project._is_script_project():
+        #     data_files = os.path.join(project_dir, "src@", "src") + ' ' + os.path.join(project_dir, "res@", "res")
+        # else:
+        #     data_files = os.path.join(project_dir, "Resources@")
         
-        if cocos.os_is_win32():
-            self._run_cmd('%s && %s %s --use-preload-cache --preload %s --js-output=%s' % (emsdk_env_path, file_packager_path, os.path.join(result_dir, 'resource.data'), data_files, os.path.join(result_dir, 'resource.js')))
-        else:
-            self._run_cmd('bash -c "source %s && %s %s --use-preload-cache --preload %s --js-output=%s"' % (emsdk_env_path, file_packager_path, os.path.join(result_dir, 'resource.data'), data_files, os.path.join(result_dir, 'resource.js')))
+        # if cocos.os_is_win32():
+        #     self._run_cmd('%s && %s %s --use-preload-cache --preload %s --js-output=%s' % (emsdk_env_path, file_packager_path, os.path.join(result_dir, 'resource.data'), data_files, os.path.join(result_dir, 'resource.js')))
+        # else:
+        #     self._run_cmd('bash -c "source %s && %s %s --use-preload-cache --preload %s --js-output=%s"' % (emsdk_env_path, file_packager_path, os.path.join(result_dir, 'resource.data'), data_files, os.path.join(result_dir, 'resource.js')))
 
         cocos.copy_files_in_dir(result_dir, output_dir)
 
