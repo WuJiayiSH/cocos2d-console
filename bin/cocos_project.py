@@ -239,9 +239,9 @@ class Platforms(object):
     def _filter_platforms(self, platforms):
         ret = []
         platforms_for_os = {
-            "linux" : [ Platforms.WEB, Platforms.LINUX, Platforms.ANDROID, Platforms.TIZEN, Platforms.EMSCRIPTEN ],
-            "mac" : [ Platforms.WEB, Platforms.IOS, Platforms.MAC, Platforms.ANDROID, Platforms.TIZEN, Platforms.EMSCRIPTEN ],
-            "win32" : [ Platforms.WEB, Platforms.WIN32, Platforms.ANDROID,
+            "linux" : [ Platforms.LINUX, Platforms.ANDROID, Platforms.TIZEN, Platforms.EMSCRIPTEN ],
+            "mac" : [ Platforms.IOS, Platforms.MAC, Platforms.ANDROID, Platforms.TIZEN, Platforms.EMSCRIPTEN ],
+            "win32" : [ Platforms.WIN32, Platforms.ANDROID,
                         Platforms.METRO, Platforms.TIZEN, Platforms.EMSCRIPTEN ]
         }
         for p in platforms:
@@ -269,12 +269,12 @@ class Platforms(object):
                     platform_list = []
         elif self._project._is_js_project():
             if self._project._is_native_support():
-                platform_list = [ Platforms.ANDROID, Platforms.WIN32, Platforms.IOS, Platforms.MAC, Platforms.EMSCRIPTEN, Platforms.WEB, Platforms.LINUX, Platforms.METRO, Platforms.TIZEN ]
+                platform_list = [ Platforms.ANDROID, Platforms.WIN32, Platforms.IOS, Platforms.MAC, Platforms.EMSCRIPTEN, Platforms.LINUX, Platforms.METRO, Platforms.TIZEN ]
             else:
                 if self._project.has_android_libs():
-                    platform_list = [ Platforms.ANDROID, Platforms.WEB ]
+                    platform_list = [ Platforms.ANDROID ]
                 else:
-                    platform_list = [ Platforms.WEB ]
+                    platform_list = []
         elif self._project._is_cpp_project():
             platform_list = [ Platforms.ANDROID, Platforms.WIN32, Platforms.IOS, Platforms.MAC, Platforms.EMSCRIPTEN, Platforms.LINUX, Platforms.METRO, Platforms.TIZEN ]
 
