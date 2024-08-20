@@ -457,13 +457,13 @@ class AndroidBuilder(object):
         if build_64bit or build_other_arch:
             if build_64bit:
                 if build_other_arch:
-                    print 'build 64bit and 32bit'
+                    print('build 64bit and 32bit')
                     return self.LuaBuildArch.BUILD_32BIT_AND_64BIT
                 else:
-                    print 'only build 64bit'
+                    print('only build 64bit')
                     return self.LuaBuildArch.ONLY_BUILD_64BIT
             else:
-                print 'only build 32bit'
+                print('only build 32bit')
                 return self.LuaBuildArch.ONLY_BUILD_32BIT
 
         return self.LuaBuildArch.UNKNOWN

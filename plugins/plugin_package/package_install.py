@@ -52,4 +52,4 @@ class PackageInstall(cocos.CCPlugin):
         PackageHelper.download_package_zip(package_data, force)
         PackageHelper.add_package(package_data)
 
-        print ""
+        print("")

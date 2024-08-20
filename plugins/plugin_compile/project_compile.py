@@ -211,7 +211,7 @@ class CCPluginCompile(cocos.CCPlugin):
         try:
             return multiprocessing.cpu_count()
         except Exception:
-            print MultiLanguage.get_string('COMPILE_DETECT_CPU_FAILED')
+            print(MultiLanguage.get_string('COMPILE_DETECT_CPU_FAILED'))
             return 1
 
     def _get_output_dir(self):
@@ -822,7 +822,7 @@ class CCPluginCompile(cocos.CCPlugin):
 
             cocos.Logging.info(MultiLanguage.get_string('COMPILE_INFO_BUILD_SUCCEED'))
         except Exception, e:
-            print str(e)
+            print(str(e))
             raise cocos.CCPluginError(MultiLanguage.get_string('COMPILE_ERROR_BUILD_FAILED'),
                                       cocos.CCPluginError.ERROR_BUILD_FAILED)
         finally:
