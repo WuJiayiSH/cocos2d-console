@@ -146,7 +146,7 @@ class CCPluginRun(cocos.CCPlugin):
         if errCode == 0:
             import json
             jsonObj = json.loads(out)
-            if jsonObj is not None and jsonObj.has_key('CFBundleIdentifier'):
+            if jsonObj is not None and 'CFBundleIdentifier' in jsonObj:
                 ret = jsonObj['CFBundleIdentifier']
 
         if ret is None:

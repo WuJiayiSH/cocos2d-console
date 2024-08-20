@@ -97,7 +97,7 @@ class MultiLanguage(object):
             self.cfg_info = json.load(f, encoding='utf-8')
             f.close()
 
-            if self.cfg_info.has_key(cur_lang_key):
+            if cur_lang_key in self.cfg_info:
                 self.cur_lang_strings = self.cfg_info[cur_lang_key]
                 # Check potential UnicodeEncodeError when system language differs to encoding. 
                 # e.g: my Windows language is Chinese but cmd encoding is cp932(Japanese)
@@ -110,7 +110,7 @@ class MultiLanguage(object):
             else:
                 self.cur_lang_strings = None
 
-            if self.cfg_info.has_key(MultiLanguage.DEFAULT_LANGUAGE):
+            if MultiLanguage.DEFAULT_LANGUAGE in self.cfg_info:
                 self.default_lang_strings = self.cfg_info[MultiLanguage.DEFAULT_LANGUAGE]
             else:
                 self.default_lang_strings = None
@@ -140,13 +140,13 @@ class MultiLanguage(object):
 
     def has_key(self, key, strings_info):
         ret = False
-        if strings_info is not None and strings_info.has_key(key):
+        if strings_info is not None and key in strings_info:
             ret = True
 
         return ret
 
     def set_current_language(self, lang):
-        if (self.cfg_info is not None) and (self.cfg_info.has_key(lang)):
+        if (self.cfg_info is not None) and (lang in self.cfg_info):
             self.cur_lang_strings = self.cfg_info[lang]
         else:
             cocos.Logging.warning(MultiLanguage.get_string('COCOS_WARNING_LANG_NOT_SUPPORT_FMT', lang))

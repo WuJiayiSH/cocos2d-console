@@ -248,7 +248,7 @@ class CCPluginNew(cocos.CCPlugin):
             data[cocos_project.Project.KEY_HAS_NATIVE] = True
 
         # record the engine version if not predefined
-        if not data.has_key(cocos_project.Project.KEY_ENGINE_VERSION):
+        if not cocos_project.Project.KEY_ENGINE_VERSION in data:
             engine_version = utils.get_engine_version(self._cocosroot)
             if engine_version is not None:
                 data[cocos_project.Project.KEY_ENGINE_VERSION] = engine_version

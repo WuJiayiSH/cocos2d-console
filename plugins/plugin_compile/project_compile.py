@@ -285,7 +285,7 @@ class CCPluginCompile(cocos.CCPlugin):
             open_file = None
             changed = False
             if key_of_copy is not None:
-                if cfg_info.has_key(key_of_copy):
+                if key_of_copy in cfg_info:
                     src_list = cfg_info[key_of_copy]
                     ret_list = self._convert_cfg_list(src_list, build_cfg_dir)
                     cfg_info[CCPluginCompile.CFG_KEY_COPY_RESOURCES] = ret_list
@@ -293,7 +293,7 @@ class CCPluginCompile(cocos.CCPlugin):
                     changed = True
 
             if key_of_must_copy is not None:
-                if cfg_info.has_key(key_of_must_copy):
+                if key_of_must_copy in cfg_info:
                     src_list = cfg_info[key_of_must_copy]
                     ret_list = self._convert_cfg_list(src_list, build_cfg_dir)
                     cfg_info[CCPluginCompile.CFG_KEY_MUST_COPY_RESOURCES] = ret_list
@@ -586,7 +586,7 @@ class CCPluginCompile(cocos.CCPlugin):
             open_file = open(cfg_file)
             cfg_info = json.load(open_file)
             open_file.close()
-            if cfg_info.has_key("remove_res"):
+            if "remove_res" in cfg_info:
                 remove_list = cfg_info["remove_res"]
                 for f in remove_list:
                     res = os.path.join(target_path, f)
@@ -1587,7 +1587,7 @@ class CCPluginCompile(cocos.CCPlugin):
     def _copy_resources(self, dst_path):
         data = self._get_build_cfg()
 
-        if data.has_key(CCPluginCompile.CFG_KEY_MUST_COPY_RESOURCES):
+        if CCPluginCompile.CFG_KEY_MUST_COPY_RESOURCES in data:
             if self._no_res:
                 fileList = data[CCPluginCompile.CFG_KEY_MUST_COPY_RESOURCES]
             else:

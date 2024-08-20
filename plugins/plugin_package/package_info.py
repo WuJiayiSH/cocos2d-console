@@ -38,7 +38,7 @@ class PackageInfo(object):
                 self.show_info(name, data)
                 return
 
-        if package_data.has_key('err'):
+        if 'err' in package_data:
             print MultiLanguage.get_string('PACKAGE_INFO_ERROR_NO_PKG_FMT', (name, version))
             return
             
