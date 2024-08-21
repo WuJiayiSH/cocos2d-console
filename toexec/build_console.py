@@ -14,7 +14,7 @@ import os
 import json
 import subprocess
 import excopy
-import ConfigParser
+ConfigParser = __import__('ConfigParser' if sys.version_info[0] < 3 else 'configparser')
 import sys
 import shutil
 

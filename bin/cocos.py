@@ -37,7 +37,7 @@ COCOS2D_CONSOLE_VERSION = '2.3'
 
 class Cocos2dIniParser:
     def __init__(self):
-        import ConfigParser
+        ConfigParser = __import__('ConfigParser' if sys.version_info[0] < 3 else 'configparser')
         self._cp = ConfigParser.ConfigParser(allow_no_value=True)
         self._cp.optionxform = str
 
@@ -460,7 +460,7 @@ class CCPlugin(object):
         if os.path.isdir(cocos2dx_path):
             return cocos2dx_path
 
-        if cls.get_cocos2d_mode() is not "distro":
+        if cls.get_cocos2d_mode() != "distro":
             # In 'distro' mode this is not a warning since
             # the source code is not expected to be installed
             Logging.warning(MultiLanguage.get_string('COCOS_WARNING_ENGINE_NOT_FOUND'))
@@ -469,7 +469,9 @@ class CCPlugin(object):
     @classmethod
     def get_console_path(cls):
         """returns the path where cocos console is installed"""
-        run_path = unicode(get_current_path(), "utf-8")
+        run_path = get_current_path()
+        if sys.version_info[0] < 3:
+            run_path = unicode(run_path, "utf-8")
         return run_path
 
     @classmethod
@@ -497,7 +499,7 @@ class CCPlugin(object):
             # Try two: cocos2d-x/../../templates
             possible_paths = [['templates'], ['..', '..', 'templates']]
             for p in possible_paths:
-                p = string.join(p, os.sep)
+                p = os.sep.join(p)
                 template_path = os.path.abspath(os.path.join(path, p))
                 try:
                     if os.path.isdir(template_path):
@@ -975,9 +977,9 @@ def _check_python_version():
     major_ver = sys.version_info[0]
     minor_ver = sys.version_info[1]
     ret = True
-    if major_ver != 2:
+    if major_ver not in [2, 3]:
         ret = False
-    elif minor_ver < 7:
+    elif major_ver == 2 and minor_ver < 7:
         ret = False
 
     if not ret:

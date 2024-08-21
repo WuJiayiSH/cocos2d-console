@@ -6,4 +6,6 @@ for /f "delims=" %%p in ('where python') do (
     if !ERRORLEVEL! == 0 set PYTHON=%%p
 )
 
+if "%PYTHON%"=="" (set PYTHON="python")
+"%PYTHON%" "--version"
 "%PYTHON%" "%~dp0/cocos.py" %*

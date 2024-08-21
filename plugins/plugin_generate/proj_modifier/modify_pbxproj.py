@@ -716,7 +716,7 @@ class XcodeProject(PBXDict):
             self.root_object = None
             self.root_group = None
 
-        for k, v in self.objects.iteritems():
+        for k, v in self.objects.items():
             v.id = k
 
     def add_other_cflags(self, flags):

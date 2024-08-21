@@ -21,7 +21,7 @@ import re
 import sys
 import shutil
 import json
-import build_web
+import plugin_compile.build_web
 import utils
 
 class CCPluginCompile(cocos.CCPlugin):
@@ -821,7 +821,7 @@ class CCPluginCompile(cocos.CCPlugin):
                     self._run_cmd(ipa_cmd)
 
             cocos.Logging.info(MultiLanguage.get_string('COMPILE_INFO_BUILD_SUCCEED'))
-        except Exception, e:
+        except Exception as e:
             print(str(e))
             raise cocos.CCPluginError(MultiLanguage.get_string('COMPILE_ERROR_BUILD_FAILED'),
                                       cocos.CCPluginError.ERROR_BUILD_FAILED)

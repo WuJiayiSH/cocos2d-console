@@ -16,7 +16,7 @@ VS_VERSION_MAP = {
 
 def get_msbuild_path(vs_version):
     if cocos.os_is_win32():
-        import _winreg
+        _winreg = __import__('_winreg' if sys.version_info[0] < 3 else 'winreg')
     else:
         return None
 
@@ -65,7 +65,7 @@ def get_msbuild_path(vs_version):
 
 def get_devenv_path(vs_version):
     if cocos.os_is_win32():
-        import _winreg
+        _winreg = __import__('_winreg' if sys.version_info[0] < 3 else 'winreg')
     else:
         return None
 
@@ -121,7 +121,7 @@ def get_vs_versions():
     # Get the VS versions
     ret = []
     if cocos.os_is_win32():
-        import _winreg
+        _winreg = __import__('_winreg' if sys.version_info[0] < 3 else 'winreg')
     else:
         return ret
 

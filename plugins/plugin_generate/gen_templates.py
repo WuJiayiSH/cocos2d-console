@@ -5,7 +5,7 @@ import os
 import sys
 import json
 import utils
-import modify_template
+import plugin_generate.modify_template
 import re
 import cocos
 

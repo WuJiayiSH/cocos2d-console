@@ -1,1 +1,1 @@
-from project_new import CCPluginNew
+from plugin_new.project_new import CCPluginNew

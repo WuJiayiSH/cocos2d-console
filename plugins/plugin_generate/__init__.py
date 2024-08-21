@@ -1,3 +1,3 @@
-from gen_libs import LibsCompiler
-from gen_simulator import SimulatorCompiler
-from gen_templates import TemplateGenerator
+from plugin_generate.gen_libs import LibsCompiler
+from plugin_generate.gen_simulator import SimulatorCompiler
+from plugin_generate.gen_templates import TemplateGenerator

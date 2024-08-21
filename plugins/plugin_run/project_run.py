@@ -16,7 +16,7 @@ import sys
 import os
 import cocos
 from MultiLanguage import MultiLanguage
-import BaseHTTPServer
+BaseHTTPServer = __import__('BaseHTTPServer' if sys.version_info[0] < 3 else 'http.server')
 import webbrowser
 import threading
 import subprocess

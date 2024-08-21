@@ -35,8 +35,11 @@ class MultiLanguage(object):
         ret = []
         if info is not None:
             for key in info.keys():
-                if isinstance(key, unicode):
-                    ret.append(key.encode('utf-8'))
+                if sys.version_info[0] < 3:
+                    if isinstance(key, unicode):
+                        ret.append(key.encode('utf-8'))
+                else:
+                    ret.append(key)
 
         return ret
 
@@ -56,12 +59,12 @@ class MultiLanguage(object):
             if isinstance(fmt_value, tuple):
                 dst_values = []
                 for value in fmt_value:
-                    if isinstance(value, unicode):
+                    if sys.version_info[0] < 3 and isinstance(value, unicode):
                         dst_values.append(value.encode(cls.get_instance().get_encoding()))
                     else:
                         dst_values.append(value)
                 ret = fmt % tuple(dst_values)
-            elif isinstance(fmt_value, unicode):
+            elif sys.version_info[0] < 3 and isinstance(fmt_value, unicode):
                 ret = fmt % fmt_value.encode(cls.get_instance().get_encoding())
             else:
                 ret = fmt % fmt_value
@@ -93,8 +96,12 @@ class MultiLanguage(object):
 
         # get the strings info
         if os.path.isfile(cfg_file_path):
-            f = open(cfg_file_path)
-            self.cfg_info = json.load(f, encoding='utf-8')
+            if sys.version_info[0] < 3:
+                f = open(cfg_file_path)
+                self.cfg_info = json.load(f, encoding='utf-8')
+            else:
+                f = open(cfg_file_path, encoding='utf-8')
+                self.cfg_info = json.load(f)
             f.close()
 
             if cur_lang_key in self.cfg_info:
@@ -162,7 +169,7 @@ class MultiLanguage(object):
         else:
             ret= key
 
-        if isinstance(ret, unicode):
+        if sys.version_info[0] < 3 and isinstance(ret, unicode):
             ret = ret.encode(self.encoding)
 
         return ret

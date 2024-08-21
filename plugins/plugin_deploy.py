@@ -87,7 +87,7 @@ class CCPluginDeploy(cocos.CCPlugin):
         self.project_name = compile_dep.project_name
 
     def find_xap_deploy_tool(self):
-        import _winreg
+        _winreg = __import__('_winreg' if sys.version_info[0] < 3 else 'winreg')
         import re
         if cocos.os_is_32bit_windows():
             reg_flag_list = [ _winreg.KEY_WOW64_32KEY ]
