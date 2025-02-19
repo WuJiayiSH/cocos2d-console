@@ -343,7 +343,10 @@ class DataStatistic(object):
 
         if skip_agree_value is None:
             # show the agreement
-            input_value = raw_input(MultiLanguage.get_string('COCOS_AGREEMENT'))
+            if sys.version_info[0] > 2:
+                input_value = input(MultiLanguage.get_string('COCOS_AGREEMENT'))
+            else:
+                input_value = raw_input(MultiLanguage.get_string('COCOS_AGREEMENT'))
             agreed = (input_value.lower() != 'n' and input_value.lower() != 'no')
         else:
             # --agreement is used to skip the input

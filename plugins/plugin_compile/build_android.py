@@ -623,7 +623,10 @@ class AndroidBuilder(object):
         cocos.Logging.warning(tip_msg)
         ret = None
         while True:
-            ret = raw_input()
+            if sys.version_info[0] > 2:
+                ret = input()
+            else:
+                ret = raw_input()
             break
 
         return ret
