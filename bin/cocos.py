@@ -245,187 +245,6 @@ class CMDRunner(object):
         return ret
 
 
-class DataStatistic(object):
-    '''
-    In order to improve cocos, we periodically send anonymous data about how you use cocos.
-    You can turn off this function by change the value of "enable_stat" in cocos2d.ini.
-
-    Information collected will be used to develop new features and improve cocos.
-
-    Since no personally identifiable information is collected,
-    the anonymous data will not be meaningful to anyone outside of Chukong Inc.
-    '''
-    inited = False
-    stat_obj = None
-    key_last_state = 'last_stat_enabled'
-    key_agreement_shown = 'agreement_shown'
-
-    @classmethod
-    def get_cfg_file_path(cls):
-        return os.path.join(os.path.expanduser('~/.cocos'), 'local_cfg.json')
-
-    @classmethod
-    def get_cfg_value(cls, key, default_value):
-        local_cfg_file = cls.get_cfg_file_path()
-        if not os.path.isfile(local_cfg_file):
-            cur_info = None
-        else:
-            try:
-                f = open(local_cfg_file)
-                cur_info = json.load(f)
-                f.close()
-            except:
-                cur_info = None
-
-        ret = default_value
-        if cur_info is not None:
-            if key in cur_info:
-                ret = cur_info[key]
-
-        return ret
-
-    @classmethod
-    def set_cfg_value(cls, key, value):
-        # get current local config info
-        cfg_file = cls.get_cfg_file_path()
-        if not os.path.isfile(cfg_file):
-            cur_info = {}
-        else:
-            try:
-                f = open(cfg_file)
-                cur_info = json.load(f)
-                f.close()
-            except:
-                cur_info = {}
-
-        # set the value in config
-        cur_info[key] = value
-
-        # make config directory if it's not already there
-        cfg_dir = os.path.dirname(cfg_file)
-        if not os.path.exists(cfg_dir):
-            os.makedirs(cfg_dir)
-
-        # write the config
-        f = open(cfg_file, 'w')
-        json.dump(cur_info, f, sort_keys=True, indent=4)
-        f.close()
-
-    # get the stat agreed or not
-    @classmethod
-    def is_agreement_shown(cls):
-        return cls.get_cfg_value(cls.key_agreement_shown, False)
-
-    @classmethod
-    def change_agree_stat(cls, agreed):
-        cls.set_cfg_value(cls.key_agreement_shown, True)
-
-        # write the config to ini
-        ini_file = os.path.join(get_current_path(), "cocos2d.ini")
-        f = open(ini_file)
-        old_lines = f.readlines()
-        f.close()
-
-        new_str = 'enable_stat=%s' % ('true' if agreed else 'false')
-        new_lines = []
-        for line in old_lines:
-            new_line = re.sub('enable_stat[ \t]*=(.*)$', new_str, line)
-            new_lines.append(new_line)
-
-        f = open(ini_file, 'w')
-        f.writelines(new_lines)
-        f.close()
-
-    @classmethod
-    def show_stat_agreement(cls, skip_agree_value=None):
-        if cls.is_agreement_shown():
-            return
-
-        if skip_agree_value is None:
-            # show the agreement
-            if sys.version_info[0] > 2:
-                input_value = input(MultiLanguage.get_string('COCOS_AGREEMENT'))
-            else:
-                input_value = raw_input(MultiLanguage.get_string('COCOS_AGREEMENT'))
-            agreed = (input_value.lower() != 'n' and input_value.lower() != 'no')
-        else:
-            # --agreement is used to skip the input
-            agreed = skip_agree_value
-        cls.change_agree_stat(agreed)
-
-    # change the last time statistics status in local config file.
-    @classmethod
-    def change_last_state(cls, enabled):
-        cls.set_cfg_value(cls.key_last_state, enabled)
-
-    # get the last time statistics status in local config file.
-    @classmethod
-    def get_last_state(cls):
-        return cls.get_cfg_value(cls.key_last_state, True)
-
-    @classmethod
-    def init_stat_obj(cls):
-        if cls.inited == False:
-            # get the cocos_stat module
-            m = None
-            try:
-                m = __import__("cocos_stat")
-            except:
-                pass
-
-            if m is not None:
-                stat_cls = getattr(m, "Statistic")
-                cls.stat_obj = stat_cls(STAT_VERSION)
-
-            # cocos_stat is found
-            if cls.stat_obj is not None:
-                # check config in cocos2d.ini
-                parser = Cocos2dIniParser()
-                cur_enabled = parser.is_statistic_enabled()
-
-                # get last time is enabled or not
-                last_enabled = cls.get_last_state()
-
-                if not cur_enabled:
-                    # statistics is disabled
-                    if last_enabled:
-                        cls.stat_obj.send_event('switch', 'off', 'stat_closed')
-                    cls.stat_obj = None
-
-                # update last time status
-                if cur_enabled != last_enabled:
-                    cls.change_last_state(cur_enabled)
-
-            # try to send the cached events
-            if cls.stat_obj is not None:
-                cls.stat_obj.send_cached_events()
-
-            cls.inited = True
-
-        return cls.stat_obj
-
-    @classmethod
-    def stat_event(cls, category, action, label):
-        try:
-            cls.init_stat_obj()
-            if cls.stat_obj is None:
-                return
-
-            cls.stat_obj.send_event(category, action, label)
-        except:
-            pass
-
-    @classmethod
-    def terminate_stat(cls):
-        try:
-            if cls.stat_obj is None:
-                return
-
-            cls.stat_obj.terminate_stat()
-        except:
-            pass
-
-
 #
 # Plugins should be a sublass of CCPlugin
 #
@@ -1055,11 +874,7 @@ if __name__ == "__main__":
     if match:
         STAT_VERSION = match.group(1)
 
-    DataStatistic.show_stat_agreement(skip_agree_value)
-    DataStatistic.stat_event('cocos', 'start', 'invoked')
-
     if not _check_python_version():
-        DataStatistic.terminate_stat()
         sys.exit(CCPluginError.ERROR_TOOLS_NOT_FOUND)
 
     parser = Cocos2dIniParser()
@@ -1068,12 +883,10 @@ if __name__ == "__main__":
 
     if len(sys.argv) == 1 or sys.argv[1] in ('-h', '--help'):
         help()
-        DataStatistic.terminate_stat()
         sys.exit(0)
 
     if len(sys.argv) > 1 and sys.argv[1] in ('-v', '--version'):
         show_version()
-        DataStatistic.terminate_stat()
         sys.exit(0)
 
     try:
@@ -1082,7 +895,6 @@ if __name__ == "__main__":
         argv = sys.argv[2:]
         # try to find plugin by name
         if command in plugins:
-            DataStatistic.stat_event('cocos', 'running_command', command)
             run_plugin(command, argv, plugins)
         else:
             # try to find plugin by category_name, so the len(sys.argv) at
@@ -1093,7 +905,6 @@ if __name__ == "__main__":
                 command = sys.argv[1] + '_' + sys.argv[2]
                 argv = sys.argv[3:]
                 if command in plugins:
-                    DataStatistic.stat_event('cocos', 'running_command', command)
                     run_plugin(command, argv, plugins)
                 else:
                     raise CCPluginError(MultiLanguage.get_string('COCOS_ERROR_CMD_NOT_FOUND_FMT',
@@ -1117,5 +928,3 @@ if __name__ == "__main__":
             sys.exit(err_no)
         else:
             raise
-    finally:
-        DataStatistic.terminate_stat()

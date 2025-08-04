@@ -206,10 +206,6 @@ class CCPluginNew(cocos.CCPlugin):
                             ver_str = match.group(1)
                             break
                     f.close()
-
-            if ver_str is not None:
-                # stat the engine version info
-                cocos.DataStatistic.stat_event('new_engine_ver', ver_str, engine_type)
         except:
             pass
 
@@ -267,7 +263,6 @@ class CCPluginNew(cocos.CCPlugin):
     def run(self, argv, dependencies):
         self.parse_args(argv)
         action_str = 'new_%s' % (self._lang)
-        cocos.DataStatistic.stat_event('new', action_str, self._tpname)
         self._create_from_cmd()
         self._stat_engine_version()
 

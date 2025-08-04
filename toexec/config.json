@@ -112,6 +112,5 @@
         }
     ],
     "hidden_import" : {
-        "cocos_stat" : "bin/cocos_stat.py"
     }
 }
