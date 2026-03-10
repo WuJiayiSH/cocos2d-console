@@ -530,6 +530,8 @@ def get_xcode_version():
     xcode = None
     version = None
     for line in child.stdout:
+        if sys.version_info[0] >= 3:
+            line = line.decode('utf-8')
         if 'Xcode' in line:
             xcode, version = str.split(line, ' ')
 

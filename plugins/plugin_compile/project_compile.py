@@ -572,8 +572,15 @@ class CCPluginCompile(cocos.CCPlugin):
     def append_xcpretty_if_installed(self, command):
         if not cocos.os_is_mac():
             return command;
-        from distutils import spawn
-        if spawn.find_executable("xcpretty") == None:
+        if os.getenv("GITHUB_ACTIONS") == "true":
+            return command
+        import sys
+        if sys.version_info >= (3, 3):
+            import shutil
+            find_executable = shutil.which
+        else:
+            from distutils.spawn import find_executable
+        if find_executable("xcpretty") is None:
             return command
         return command + " | xcpretty"
 
@@ -683,8 +690,8 @@ class CCPluginCompile(cocos.CCPlugin):
         projectPath = os.path.join(ios_project_dir, self.xcodeproj_name)
         pbxprojectPath = os.path.join(projectPath, "project.pbxproj")
 
-        f = file(pbxprojectPath)
-        contents = f.read()
+        with open(pbxprojectPath, 'r') as f:
+            contents = f.read()
 
         section = re.search(r"Begin PBXProject section.*End PBXProject section", contents, re.S)
 
@@ -867,8 +874,8 @@ class CCPluginCompile(cocos.CCPlugin):
         projectPath = os.path.join(mac_project_dir, self.xcodeproj_name)
         pbxprojectPath = os.path.join(projectPath, "project.pbxproj")
 
-        f = file(pbxprojectPath)
-        contents = f.read()
+        with open(pbxprojectPath, 'r') as f:
+            contents = f.read()
 
         section = re.search(
             r"Begin PBXProject section.*End PBXProject section",
@@ -963,7 +970,8 @@ class CCPluginCompile(cocos.CCPlugin):
                 self._remove_res(resource_path)
 
             cocos.Logging.info(MultiLanguage.get_string('COMPILE_INFO_BUILD_SUCCEED'))
-        except:
+        except Exception as e:
+            print(str(e))
             raise cocos.CCPluginError(MultiLanguage.get_string('COMPILE_ERROR_BUILD_FAILED'),
                                       cocos.CCPluginError.ERROR_BUILD_FAILED)
         finally:
