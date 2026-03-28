@@ -1169,81 +1169,72 @@ class CCPluginCompile(cocos.CCPlugin):
             raise cocos.CCPluginError(MultiLanguage.get_string('COMPILE_ERROR_BUILD_ON_WIN'),
                                       cocos.CCPluginError.ERROR_WRONG_ARGS)
 
-        win32_projectdir = self._platforms.project_path()
+        project_dir = self._project.get_project_dir()
         output_dir = self._output_dir
 
         cocos.Logging.info(MultiLanguage.get_string('COMPILE_INFO_BUILDING'))
 
-        # get the solution file & project name
         cfg_obj = self._platforms.get_current_config()
-        if cfg_obj.sln_file is not None:
-            sln_name = cfg_obj.sln_file
-            if cfg_obj.project_name is None:
-                raise cocos.CCPluginError(MultiLanguage.get_string('COMPILE_ERROR_CFG_NOT_FOUND_FMT',
-                                                                   (cocos_project.Win32Config.KEY_PROJECT_NAME,
-                                                                    cocos_project.Win32Config.KEY_SLN_FILE,
-                                                                    cocos_project.Project.CONFIG)),
-                                          cocos.CCPluginError.ERROR_WRONG_CONFIG)
-            else:
-                name = cfg_obj.project_name
-        else:
-            name, sln_name = self.checkFileByExtention(".sln", win32_projectdir)
-            if not sln_name:
-                message = MultiLanguage.get_string('COMPILE_ERROR_SLN_NOT_FOUND')
-                raise cocos.CCPluginError(message, cocos.CCPluginError.ERROR_PATH_NOT_FOUND)
 
-        # build the project
-        self.project_name = name
-        projectPath = os.path.join(win32_projectdir, sln_name)
+        if cfg_obj.cmake_path is not None:
+            cmakefile_dir = os.path.join(project_dir, cfg_obj.cmake_path)
+        else:
+            cmakefile_dir = project_dir
+
+        # get the project name
+        if cfg_obj.project_name is not None:
+            self.project_name = cfg_obj.project_name
+        else:
+            f = open(os.path.join(cmakefile_dir, 'CMakeLists.txt'), 'r')
+            regexp_set_app_name = re.compile(r'\s*set\s*\(\s*APP_NAME', re.IGNORECASE)
+            for line in f.readlines():
+                if regexp_set_app_name.search(line):
+                    self.project_name = re.search('APP_NAME ([^\)]+)\)', line, re.IGNORECASE).group(1)
+                    break
+            if hasattr(self, 'project_name') == False:
+	            raise cocos.CCPluginError("Couldn't find APP_NAME in CMakeLists.txt")
+
+        if cfg_obj.build_dir is not None:
+            build_dir = os.path.join(project_dir, cfg_obj.build_dir)
+        else:
+            build_dir = os.path.join(project_dir, 'win32-build')
+
+        if not os.path.exists(build_dir):
+            os.makedirs(build_dir)
+
         build_mode = 'Debug' if self._is_debug_mode() else 'Release'
-        self.build_vs_project(projectPath, self.project_name, build_mode, self.vs_version)
+        debug_state = 'ON' if self._is_debug_mode() else 'OFF'
+        with cocos.pushd(build_dir):
+            self._run_cmd('cmake -A Win32 -DCMAKE_BUILD_TYPE=%s -DDEBUG_MODE=%s %s' % (
+                build_mode,
+                debug_state,
+                os.path.relpath(cmakefile_dir, build_dir)
+            ))
 
-        # copy files
-        build_folder_name = "%s.win32" % build_mode
-        build_folder_path = os.path.join(win32_projectdir, build_folder_name)
-        if not os.path.isdir(build_folder_path):
-            message = MultiLanguage.get_string('COMPILE_ERROR_BUILD_PATH_NOT_FOUND_FMT', build_folder_path)
-            raise cocos.CCPluginError(message, cocos.CCPluginError.ERROR_PATH_NOT_FOUND)
+        with cocos.pushd(build_dir):
+            self._run_cmd('cmake --build . --config %s --target %s --parallel %s' % (
+                build_mode,
+                self.project_name,
+                self._jobs
+            ))
 
-        # remove the files in output dir (keep the exe files)
+        # move file
         if os.path.exists(output_dir):
-            output_files = os.listdir(output_dir)
-            for element in output_files:
-                ele_full_path = os.path.join(output_dir, element)
-                if os.path.isfile(ele_full_path):
-                    base_name, file_ext = os.path.splitext(element)
-                    if not file_ext == ".exe":
-                        os.remove(ele_full_path)
-                elif os.path.isdir(ele_full_path):
-                    shutil.rmtree(ele_full_path)
+            shutil.rmtree(output_dir)
+        os.makedirs(output_dir)
 
-        # create output dir if it not existed
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-
-        if cfg_obj.exe_out_dir is None:
-            exe_out_dir = build_folder_path
+        if cfg_obj.build_result_dir is not None:
+            if os.path.exist(os.path.join(build_dir, "bin", cfg_obj.build_result_dir, build_mode )):
+                result_dir = os.path.join(build_dir, 'bin', cfg_obj.build_result_dir, build_mode, self.project_name)
+            else:
+                result_dir = os.path.join(build_dir, 'bin', cfg_obj.build_result_dir, self.project_name)
         else:
-            exe_out_dir = os.path.join(build_folder_path, cfg_obj.exe_out_dir)
-
-        # copy exe
-        files = os.listdir(exe_out_dir)
-        proj_exe_name = "%s.exe" % self.project_name
-        for filename in files:
-            if filename == proj_exe_name:
-                file_path = os.path.join(exe_out_dir, filename)
-                cocos.Logging.info(MultiLanguage.get_string('COMPILE_INFO_COPYING_FMT', filename))
-                shutil.copy(file_path, output_dir)
-                break
-
-        # copy dll
-        files = os.listdir(build_folder_path)
-        for filename in files:
-            name, ext = os.path.splitext(filename)
-            if ext == '.dll':
-                file_path = os.path.join(build_folder_path, filename)
-                cocos.Logging.info(MultiLanguage.get_string('COMPILE_INFO_COPYING_FMT', filename))
-                shutil.copy(file_path, output_dir)
+            if os.path.exists(os.path.join(build_dir, 'bin', build_mode)):
+                result_dir = os.path.join(build_dir, 'bin', build_mode, self.project_name)
+            else:
+                result_dir = os.path.join(build_dir, 'bin', self.project_name)
+        
+        cocos.copy_files_in_dir(result_dir, output_dir)
 
         # copy lua files & res
         res_path = os.path.join(output_dir, "Resources")
